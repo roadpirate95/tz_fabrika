@@ -16,7 +16,7 @@ class Client(models.Model):
     MIDDLE = 'MD'
     SENIOR = 'SR'
 
-    MOSKOW = 'MSK'
+    MOSСOW = 'MSK'
     ATLANTIC = 'AST'
     EUROPE = 'CET'
 
@@ -27,7 +27,7 @@ class Client(models.Model):
     ]
 
     TIMEZONE = [
-        (MOSKOW, 'UTC+3'),
+        (MOSСOW, 'UTC+3'),
         (ATLANTIC, 'UTC−4'),
         (EUROPE, 'UTC+1'),
     ]
@@ -36,7 +36,7 @@ class Client(models.Model):
         "Номер телефона", validators=[phone_number_is_valid], max_length=12, unique=True)
     operator = models.PositiveIntegerField("Код оператора")
     tag = models.CharField(max_length=2, choices=POSITION, default=JUNIOR)
-    timezone = models.CharField(max_length=3, choices=TIMEZONE, default=MOSKOW)
+    timezone = models.CharField(max_length=3, choices=TIMEZONE, default=MOSСOW)
 
     def save(self, *args, **kwargs):
         if len(str(self.phoneNumber)) == 12:
