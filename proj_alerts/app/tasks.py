@@ -1,6 +1,5 @@
 import datetime
 import json
-import logging
 from django.core.mail import send_mail
 import requests
 from celery import shared_task

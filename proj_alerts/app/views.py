@@ -23,7 +23,7 @@ def sending_messages(request, *args, **kwargs):
         countdown = (start_new_obj - datetime.datetime.now()).seconds
         print(countdown)
         send.apply_async(args=[str(kwargs.get('pk'))], countdown=countdown)
-    return Response(status='203', data={'a': 'aaa'})
+    return Response(status='200', data='Success')
 
 
 class ClientViewSet(mixins.CreateModelMixin,
