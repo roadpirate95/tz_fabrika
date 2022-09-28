@@ -6,7 +6,9 @@ from celery import shared_task
 from django.shortcuts import get_object_or_404
 from proj_alerts.celery import app
 from proj_alerts.settings import RECIPIENTS_EMAIL, DEFAULT_FROM_EMAIL, TOKEN_API, URL_OUTER_API
+import logging
 
+logger = logging.getLogger(__name__)
 
 @shared_task(name='send')
 def send(idx):
@@ -20,6 +22,7 @@ def send(idx):
 
     for client in clients:
         message = Message.objects.create(create=datetime.datetime.now(), sending=sending_instance, client=client)
+        logger.info(f'Message create {message.id}')
     message_join_client = Message.objects.select_related('client').filter(sending_id=sending_instance.id)
 
     data = {
@@ -35,6 +38,8 @@ def send(idx):
         response = requests.post(f'{URL_OUTER_API}{data["id"]}', headers=headers, json=data)
         if response.status_code == 200:
             Message.objects.filter(pk=message.id).update(status_sending=True)
+            logger.info(f'Message ID {message.id} status_sending : True')
+
 
 
 @app.task(name="mail")

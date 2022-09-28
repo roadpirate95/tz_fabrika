@@ -3,14 +3,16 @@ from rest_framework import status, mixins
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.generics import get_object_or_404
+from rest_framework.generics import get_object_or_404, ListAPIView
 from .models import Client, Sending
 from .serializers import ClientSerializer, SendingSerializer, SendingListSerializer, MessageSerializer
 from rest_framework.viewsets import GenericViewSet
 from app.tasks import send
 import datetime
 import json
+import logging
 
+logger = logging.getLogger(__name__)
 
 @api_view(['POST'])
 def sending_messages(request, *args, **kwargs):
@@ -23,7 +25,7 @@ def sending_messages(request, *args, **kwargs):
         countdown = (start_new_obj - datetime.datetime.now()).seconds
         print(countdown)
         send.apply_async(args=[str(kwargs.get('pk'))], countdown=countdown)
-    return Response(status='200', data='Success')
+    return Response(status='200', data={'Success': True})
 
 
 class ClientViewSet(mixins.CreateModelMixin,
@@ -34,6 +36,31 @@ class ClientViewSet(mixins.CreateModelMixin,
 
     queryset = Client.objects.all()
     serializer_class = ClientSerializer
+
+    def create(self, request, *args, **kwargs):
+        try:
+            create_client = super(ClientViewSet, self).create(request, *args, **kwargs)
+            logger.info(f'{datetime.datetime.now()} Create client {create_client.data}')
+            return Response(status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+    def update(self, request, *args, **kwargs):
+        try:
+            update_client = super(ClientViewSet, self).update(request, *args, **kwargs)
+            logger.info(f'{datetime.datetime.now()} Create client {update_client.data}')
+            return Response({'update': update_client.data})
+        except Exception as e:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self, request, *args, **kwargs):
+        try:
+            delete_client = super(ClientViewSet, self).destroy(request, *args, **kwargs)
+            logger.info(f'{datetime.datetime.now()} Delete client {delete_client.data}')
+            return Response({'delete': delete_client.data})
+        except Exception as e:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
 
 
 class SendingViewSet(mixins.DestroyModelMixin,
@@ -49,6 +76,7 @@ class SendingViewSet(mixins.DestroyModelMixin,
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
+            logger.info(f'{datetime.datetime.now()} Create sending {serializer.data}')
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -61,7 +89,7 @@ class SendingViewSet(mixins.DestroyModelMixin,
         serializer = self.get_serializer(update_sending, data=request.data)
         if serializer.is_valid():
             serializer.save()
-
+            logger.info(f'{datetime.datetime.now()} Update sending {serializer.data}')
             return Response(serializer.data)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
