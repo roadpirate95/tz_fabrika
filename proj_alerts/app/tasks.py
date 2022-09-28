@@ -7,13 +7,12 @@ from django.shortcuts import get_object_or_404
 from proj_alerts.celery import app
 from proj_alerts.settings import RECIPIENTS_EMAIL, DEFAULT_FROM_EMAIL, TOKEN_API, URL_OUTER_API
 import logging
-
+from .models import Message, Client, Sending
 logger = logging.getLogger(__name__)
 
 @shared_task(name='send')
 def send(idx):
     headers = {'Authorization': f'Bearer {TOKEN_API}'}
-    from .models import Message, Client, Sending
     sending_instance = get_object_or_404(Sending, pk=int(idx))
     filters = json.loads(sending_instance.filter_client)
     tag_filters = tuple(set(filters['tag']))
@@ -44,5 +43,9 @@ def send(idx):
 
 @app.task(name="mail")
 def mail():
-    send_mail('Hello', 'World', DEFAULT_FROM_EMAIL, RECIPIENTS_EMAIL)
+    today = datetime.datetime.now()
+    delta = datetime.timedelta(days=1)
+    yesterday = today - delta
+    sending_of_one_day = Sending.objects.filter(start__gt=yesterday)
+    send_mail('of day', f'{sending_of_one_day}', DEFAULT_FROM_EMAIL, RECIPIENTS_EMAIL)
     return 1
