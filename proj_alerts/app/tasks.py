@@ -46,6 +46,6 @@ def mail():
     today = datetime.datetime.now()
     delta = datetime.timedelta(days=1)
     yesterday = today - delta
-    sending_of_one_day = Sending.objects.filter(start__gt=yesterday)
-    send_mail('of day', f'{sending_of_one_day}', DEFAULT_FROM_EMAIL, RECIPIENTS_EMAIL)
+    sending_for_one_day = Sending.objects.filter(start__gt=yesterday)
+    send_mail('of day', f'{sending_for_one_day}', DEFAULT_FROM_EMAIL, RECIPIENTS_EMAIL)
     return 1
