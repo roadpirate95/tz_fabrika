@@ -12,6 +12,9 @@ logger = logging.getLogger(__name__)
 
 @shared_task(name='send')
 def send(idx):
+
+    """Функция для отправки рассылки.Используется Celery чтобы перенести работу в фоновый режим"""
+
     headers = {'Authorization': f'Bearer {TOKEN_API}'}
     sending_instance = get_object_or_404(Sending, pk=int(idx))
     filters = json.loads(sending_instance.filter_client)
@@ -43,6 +46,9 @@ def send(idx):
 
 @app.task(name="mail")
 def mail():
+
+    """Отправка электронной почты со сведениями по рассылкам за сутки"""
+
     today = datetime.datetime.now()
     delta = datetime.timedelta(days=1)
     yesterday = today - delta

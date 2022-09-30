@@ -34,6 +34,8 @@ class ClientViewSet(mixins.CreateModelMixin,
                     mixins.ListModelMixin,
                     GenericViewSet):
 
+    """Создание, обновление, удаление клиента. Логирование на каждом этапе"""
+
     queryset = Client.objects.all()
     serializer_class = ClientSerializer
 
@@ -65,6 +67,7 @@ class ClientViewSet(mixins.CreateModelMixin,
 
 class SendingViewSet(mixins.DestroyModelMixin,
                      GenericViewSet):
+    """Создание, обновление рассылки"""
 
     queryset = Sending.objects.all()
     serializer_class = SendingSerializer
@@ -97,6 +100,8 @@ class SendingViewSet(mixins.DestroyModelMixin,
 
 class SendingList(APIView):
 
+    """Получение общей статистики по рассылкам и (не)отправленых сообщений по ним"""
+
     def get(self, request):
         sending_all = Sending.objects.prefetch_related(Prefetch('send', to_attr='prefetched_sends'))
         serializer = SendingListSerializer(sending_all, many=True)
@@ -104,6 +109,8 @@ class SendingList(APIView):
 
 
 class MessageList(APIView):
+
+    """Просмотр сообщений по конкретной рассылке"""
 
     def get(self, request, pk):
         get_sending = get_object_or_404(Sending, pk=pk)
